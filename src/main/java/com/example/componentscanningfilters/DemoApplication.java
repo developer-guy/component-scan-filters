@@ -15,8 +15,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Arrays;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 @Configuration
 @ComponentScan(includeFilters = {
@@ -32,9 +34,23 @@ public class DemoApplication {
 	public static void main(String[] args) {
 		ConfigurableApplicationContext context = SpringApplication.run(DemoApplication.class, args);
 		String[] beanDefinitionNames = context.getBeanDefinitionNames();
-		Arrays.stream(beanDefinitionNames)
-				.filter(n -> !n.contains("springframework"))
-				.forEach(System.out::println);
+
+		aBunchOfOperationsWorkingOnBeans(beanDefinitionNames,
+				bean -> !bean.contains("springframework"),
+				String::toUpperCase,
+				System.out::println);
+	}
+
+	public static void aBunchOfOperationsWorkingOnBeans(String[] beans,
+	                                                    Predicate<String> filter,
+	                                                    Function<String, String> map,
+	                                                    Consumer<String> consume) {
+		for (String bean : beans) {
+			if (filter.test(bean)) {
+				String mappedBean = map.apply(bean);
+				consume.accept(mappedBean);
+			}
+		}
 	}
 }
 
